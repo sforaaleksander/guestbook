@@ -25,6 +25,11 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jtwig</groupId>
+      <artifactId>jtwig-core</artifactId>
+      <version>5.86.1.RELEASE</version>
+    </dependency>
   </dependencies>
 
   <build>
