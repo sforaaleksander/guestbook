@@ -7,7 +7,6 @@ import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
 
 import java.io.*;
-import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -18,7 +17,7 @@ public class Guestbook implements HttpHandler {
     private static List<Note> notes;
 
     public Guestbook() {
-        this.notes = new ArrayList<>();
+        notes = new ArrayList<>();
     }
 
     @Override
@@ -117,8 +116,8 @@ public class Guestbook implements HttpHandler {
         for(String pair : pairs){
             String[] keyValue = pair.split("=");
             // We have to decode the value because it's urlencoded. see: https://en.wikipedia.org/wiki/POST_(HTTP)#Use_for_submitting_web_forms
-            String key = new URLDecoder().decode(keyValue[0], "UTF-8");
-            String value = new URLDecoder().decode(keyValue[1], "UTF-8");
+            String key = URLDecoder.decode(keyValue[0], "UTF-8");
+            String value = URLDecoder.decode(keyValue[1], "UTF-8");
 //            if (key.length() != 0 && value.length() != 0){
             map.put(key, value);
 //            }

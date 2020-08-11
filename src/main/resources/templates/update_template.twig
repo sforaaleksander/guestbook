@@ -12,9 +12,9 @@
 <h2>editing note posted at {{ note.date }}</h2>
 <form id="note-form" method="POST">
     <label for="name"> Your name:</label>
-    <input type="text" name="name" placeholder={{ note.name }}>
+    <input type="text" name="name" value={{ note.name }}>
     <label for="message">Your message:</label>
-    <textarea name="message" placeholder={{ note.message }}></textarea>
+    <textarea name="message">{{ note.message }}</textarea>
     <button type="submit">Update note</button>
 </form>
 </body>
