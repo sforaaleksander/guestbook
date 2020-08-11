@@ -23,15 +23,12 @@ public class Guestbook implements HttpHandler {
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         String method = httpExchange.getRequestMethod();
-
         if(method.equals("POST")){
             System.out.println("posting");
             postNote(httpExchange);
         }
-        
         String requestURI = httpExchange.getRequestURI().toString();
         System.out.println(requestURI);
-
         if (requestURI.contains("delete")){
             System.out.println("now deleting");
             deleteNote(httpExchange);
@@ -41,17 +38,19 @@ public class Guestbook implements HttpHandler {
             updateNote(httpExchange);
             return;
         }
-
         if(method.equals("POST") && requestURI.contains("update")) {
             saveUpdatedNote(httpExchange);
         }
-            getNotes(httpExchange);
+        getNotes(httpExchange);
         System.out.println(notes.size());
     }
 
-    private void saveUpdatedNote(HttpExchange httpExchange) {
+    private void saveUpdatedNote(HttpExchange httpExchange) throws IOException {
         int noteId = getNoteId(httpExchange);
         Note note = notes.get(noteId);
+        Map<String, String> updates = getInputs(httpExchange);
+        note.setMessage(updates.get("message"));
+        redirectHome(httpExchange);
     }
 
     private void updateNote(HttpExchange httpExchange) throws IOException {
@@ -70,6 +69,10 @@ public class Guestbook implements HttpHandler {
     private void deleteNote(HttpExchange httpExchange) throws IOException {
         int noteId = getNoteId(httpExchange);
         notes.remove(noteId);
+        redirectHome(httpExchange);
+    }
+
+    private void redirectHome(HttpExchange httpExchange) throws IOException {
         Headers responseHeaders = httpExchange.getResponseHeaders();
         responseHeaders.set("Location", "/guestbook");
         httpExchange.sendResponseHeaders(302,0);
@@ -93,21 +96,30 @@ public class Guestbook implements HttpHandler {
     }
 
     private void postNote(HttpExchange httpExchange) throws IOException {
-        InputStreamReader isr = new InputStreamReader(httpExchange.getRequestBody(), StandardCharsets.UTF_8);
-        BufferedReader br = new BufferedReader(isr);
-        String formData = br.readLine();
+        Map<String, String> inputs = getInputs(httpExchange);
 
-        System.out.println(formData);
-        Map<String, String> inputs = parseFormData(formData);
+        //TODO
+        if (inputs.isEmpty()) {
+            return;
+        }
 
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
         String strDate= formatter.format(date);
-
         System.out.println(inputs.get("name"));
         System.out.println(inputs.get("message"));
-
         notes.add(new Note(notes.size(), inputs.get("name"), inputs.get("message"), strDate));
+    }
+
+    private Map<String, String> getInputs(HttpExchange httpExchange) throws IOException {
+        String formData = getFormData(httpExchange);
+        return parseFormData(formData);
+    }
+
+    private String getFormData(HttpExchange httpExchange) throws IOException {
+        InputStreamReader isr = new InputStreamReader(httpExchange.getRequestBody(), StandardCharsets.UTF_8);
+        BufferedReader br = new BufferedReader(isr);
+        return br.readLine();
     }
 
     private static Map<String, String> parseFormData(String formData) throws UnsupportedEncodingException {
@@ -118,9 +130,7 @@ public class Guestbook implements HttpHandler {
             // We have to decode the value because it's urlencoded. see: https://en.wikipedia.org/wiki/POST_(HTTP)#Use_for_submitting_web_forms
             String key = URLDecoder.decode(keyValue[0], "UTF-8");
             String value = URLDecoder.decode(keyValue[1], "UTF-8");
-//            if (key.length() != 0 && value.length() != 0){
             map.put(key, value);
-//            }
         }
         return map;
     }

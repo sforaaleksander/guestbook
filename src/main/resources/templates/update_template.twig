@@ -11,8 +11,7 @@
 <h1>GUESTBOOK</h1>
 <h2>editing note posted at {{ note.date }}</h2>
 <form id="note-form" method="POST">
-    <label for="name"> Your name:</label>
-    <input type="text" name="name" value={{ note.name }}>
+    <h4>Your name: {{ note.name }}</h4>
     <label for="message">Your message:</label>
     <textarea name="message">{{ note.message }}</textarea>
     <button type="submit">Update note</button>
