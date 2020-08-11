@@ -12,7 +12,9 @@
 <div id="notes">
     {% for note in notes %}
         <div class="note">
-        <h4>{{ note.name }}, on  {{ note.date }} <a href="guestbook/delete/{{ note.id }}"> DELETE</a></h4>
+        <h4>{{ note.name }}, on  {{ note.date }} <a href="guestbook/delete/{{ note.id }}"> DELETE</a>
+            <a href="guestbook/update/{{ note.id }}"> UPDATE</a>
+        </h4>
         <div class="message">"{{ note.message }}"</div>
         </div>
     {% endfor %}

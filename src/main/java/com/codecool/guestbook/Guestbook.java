@@ -23,18 +23,13 @@ public class Guestbook implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-
         String method = httpExchange.getRequestMethod();
-
-        String response = "";
 
         if(method.equals("POST")){
             System.out.println("posting");
             postNote(httpExchange);
         }
-
-//        String requestedURL = "http://"+httpExchange.getRequestHeaders().getFirst("Host") + httpExchange.getRequestURI();
-//        System.out.println(requestedURL);
+        
         String requestURI = httpExchange.getRequestURI().toString();
         System.out.println(requestURI);
 
@@ -42,29 +37,47 @@ public class Guestbook implements HttpHandler {
             System.out.println("now deleting");
             deleteNote(httpExchange);
         }
+        if (requestURI.contains("update")){
+            System.out.println("now updating");
+            updateNote(httpExchange);
+            return;
+        }
         getNotes(httpExchange);
         System.out.println(notes.size());
     }
 
+    private void updateNote(HttpExchange httpExchange) throws IOException {
+        String response;
+        JtwigTemplate template = JtwigTemplate.classpathTemplate("templates/update_template.twig");
+        JtwigModel model = JtwigModel.newModel();
+        int noteId = getNoteId(httpExchange);
+        model.with("note", notes.get(noteId));
+        response = template.render(model);
+        httpExchange.sendResponseHeaders(200, response.length());
+        OutputStream os = httpExchange.getResponseBody();
+        os.write(response.getBytes());
+        os.close();
+    }
+
     private void deleteNote(HttpExchange httpExchange) throws IOException {
-        String[] elements = httpExchange.getRequestURI().toString().split("/");
-        int noteId = Integer.parseInt(elements[elements.length-1]);
+        int noteId = getNoteId(httpExchange);
         notes.remove(noteId);
         Headers responseHeaders = httpExchange.getResponseHeaders();
         responseHeaders.set("Location", "/guestbook");
         httpExchange.sendResponseHeaders(302,0);
     }
 
+    private int getNoteId(HttpExchange httpExchange) {
+        String[] elements = httpExchange.getRequestURI().toString().split("/");
+        return Integer.parseInt(elements[elements.length-1]);
+    }
+
     private void getNotes(HttpExchange httpExchange) throws IOException {
         String response;
         JtwigTemplate template = JtwigTemplate.classpathTemplate("templates/template.twig");
-
         JtwigModel model = JtwigModel.newModel();
-
         model.with("notes", notes);
-
         response = template.render(model);
-
         httpExchange.sendResponseHeaders(200, response.length());
         OutputStream os = httpExchange.getResponseBody();
         os.write(response.getBytes());
