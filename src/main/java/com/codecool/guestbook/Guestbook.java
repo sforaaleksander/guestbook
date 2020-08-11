@@ -42,8 +42,17 @@ public class Guestbook implements HttpHandler {
             updateNote(httpExchange);
             return;
         }
-        getNotes(httpExchange);
+
+        if(method.equals("POST") && requestURI.contains("update")) {
+            saveUpdatedNote(httpExchange);
+        }
+            getNotes(httpExchange);
         System.out.println(notes.size());
+    }
+
+    private void saveUpdatedNote(HttpExchange httpExchange) {
+        int noteId = getNoteId(httpExchange);
+        Note note = notes.get(noteId);
     }
 
     private void updateNote(HttpExchange httpExchange) throws IOException {
