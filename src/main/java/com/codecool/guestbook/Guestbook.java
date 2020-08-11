@@ -1,11 +1,13 @@
 package com.codecool.guestbook;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -30,8 +32,27 @@ public class Guestbook implements HttpHandler {
             System.out.println("posting");
             postNote(httpExchange);
         }
+
+//        String requestedURL = "http://"+httpExchange.getRequestHeaders().getFirst("Host") + httpExchange.getRequestURI();
+//        System.out.println(requestedURL);
+        String requestURI = httpExchange.getRequestURI().toString();
+        System.out.println(requestURI);
+
+        if (requestURI.contains("delete")){
+            System.out.println("now deleting");
+            deleteNote(httpExchange);
+        }
         getNotes(httpExchange);
         System.out.println(notes.size());
+    }
+
+    private void deleteNote(HttpExchange httpExchange) throws IOException {
+        String[] elements = httpExchange.getRequestURI().toString().split("/");
+        int noteId = Integer.parseInt(elements[elements.length-1]);
+        notes.remove(noteId);
+        Headers responseHeaders = httpExchange.getResponseHeaders();
+        responseHeaders.set("Location", "/guestbook");
+        httpExchange.sendResponseHeaders(302,0);
     }
 
     private void getNotes(HttpExchange httpExchange) throws IOException {
@@ -43,7 +64,6 @@ public class Guestbook implements HttpHandler {
         model.with("notes", notes);
 
         response = template.render(model);
-
 
         httpExchange.sendResponseHeaders(200, response.length());
         OutputStream os = httpExchange.getResponseBody();
@@ -66,8 +86,7 @@ public class Guestbook implements HttpHandler {
         System.out.println(inputs.get("name"));
         System.out.println(inputs.get("message"));
 
-        notes.add(new Note(inputs.get("name"), inputs.get("message"), strDate));
-
+        notes.add(new Note(notes.size(), inputs.get("name"), inputs.get("message"), strDate));
     }
 
     private static Map<String, String> parseFormData(String formData) throws UnsupportedEncodingException {

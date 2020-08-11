@@ -33,3 +33,7 @@ h4 {
 .note {
     margin-bottom: 2em;
 }
+
+a > h4 {
+    font-weight: lighter;
+}
