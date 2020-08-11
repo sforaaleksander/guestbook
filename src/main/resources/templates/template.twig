@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ENG">
+<head>
+    <link rel="stylesheet" href="/static/css/style.css"/>
+    <link rel="shortcut icon" href="#">
+    <script src="/static/js/script.js" defer></script>
+    <meta charset="UTF-8">
+    <title>Guestbook</title>
+</head>
+<body>
+<h1>GUESTBOOK</h1>
+<div id="notes">
+    {% for note in notes %}
+        <div class="note">
+        <h4>{{ note.name }} {{ note.date }}</h4>
+        <p>{{ note.message }}</p>
+        </div>
+    {% endfor %}
+</div>
+<form id="note-form" method="POST">
+    <label for="name"> Your name:</label>
+    <input type="text" id="name">
+    <label for="message">Your message:</label>
+    <textarea id="message">Type your message</textarea>
+    <button type="submit">Write in!</button>
+</form>
+</body>
+</html>
