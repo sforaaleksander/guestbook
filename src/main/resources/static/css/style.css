@@ -25,3 +25,11 @@ input, textarea {
 button {
     width: 20vh;
 }
+
+h4 {
+    margin-bottom: 0.3em;
+}
+
+.note {
+    margin-bottom: 2em;
+}

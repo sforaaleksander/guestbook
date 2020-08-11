@@ -9,9 +9,11 @@ import java.io.*;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Guestbook implements HttpHandler {
-    private List<Note> notes;
+    private static List<Note> notes;
 
     public Guestbook() {
         this.notes = new ArrayList<>();
@@ -38,9 +40,10 @@ public class Guestbook implements HttpHandler {
 
         JtwigModel model = JtwigModel.newModel();
 
+        model.with("notes", notes);
+
         response = template.render(model);
 
-        model.with("notes", notes);
 
         httpExchange.sendResponseHeaders(200, response.length());
         OutputStream os = httpExchange.getResponseBody();
@@ -56,10 +59,14 @@ public class Guestbook implements HttpHandler {
         System.out.println(formData);
         Map<String, String> inputs = parseFormData(formData);
 
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+        String strDate= formatter.format(date);
+
         System.out.println(inputs.get("name"));
         System.out.println(inputs.get("message"));
 
-        notes.add(new Note(inputs.get("name"), inputs.get("message")));
+        notes.add(new Note(inputs.get("name"), inputs.get("message"), strDate));
 
     }
 
