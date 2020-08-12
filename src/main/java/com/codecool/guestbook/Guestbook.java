@@ -15,13 +15,18 @@ import java.util.Date;
 
 public class Guestbook implements HttpHandler {
     private static List<Note> notes;
+    private static int idCount;
 
     public Guestbook() {
         notes = new ArrayList<>();
+        idCount = 0;
     }
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
+        for(Note note : notes) {
+            System.out.println(note);
+        }
         String method = httpExchange.getRequestMethod();
         String requestURI = httpExchange.getRequestURI().toString();
         System.out.println(requestURI);
@@ -47,7 +52,7 @@ public class Guestbook implements HttpHandler {
 
     private void saveUpdatedNote(HttpExchange httpExchange) throws IOException {
         int noteId = getNoteId(httpExchange);
-        Note note = notes.get(noteId);
+        Note note = getNoteById(noteId);
         Map<String, String> updates = getInputs(httpExchange);
         note.setMessage(updates.get("message"));
         redirectHome(httpExchange);
@@ -58,14 +63,19 @@ public class Guestbook implements HttpHandler {
         JtwigTemplate template = JtwigTemplate.classpathTemplate("templates/update_template.twig");
         JtwigModel model = JtwigModel.newModel();
         int noteId = getNoteId(httpExchange);
-        model.with("note", notes.get(noteId));
+        Note note = getNoteById(noteId);
+        model.with("note", note);
         response = template.render(model);
         send200(httpExchange, response);
     }
 
+    private Note getNoteById(int noteId) {
+        return notes.stream().filter(note -> note.getId()==noteId).findFirst().orElse(null);
+    }
+
     private void deleteNote(HttpExchange httpExchange) throws IOException {
-        int noteId = getNoteId(httpExchange);
-        notes.remove(noteId);
+        final int noteId = getNoteId(httpExchange);
+        notes.removeIf(note -> note.getId() == noteId);
         redirectHome(httpExchange);
     }
 
@@ -109,7 +119,8 @@ public class Guestbook implements HttpHandler {
         String strDate = formatter.format(date);
         System.out.println(inputs.get("name"));
         System.out.println(inputs.get("message"));
-        notes.add(new Note(notes.size(), inputs.get("name"), inputs.get("message"), strDate));
+        notes.add(new Note(idCount, inputs.get("name"), inputs.get("message"), strDate));
+        idCount++;
     }
 
     private Map<String, String> getInputs(HttpExchange httpExchange) throws IOException {

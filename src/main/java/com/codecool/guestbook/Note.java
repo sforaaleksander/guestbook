@@ -42,4 +42,14 @@ public class Note {
     public void setDate(String date) {
         this.date = date;
     }
+
+    @Override
+    public String toString() {
+        return "Note{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", message='" + message + '\'' +
+                ", date='" + date + '\'' +
+                '}';
+    }
 }
