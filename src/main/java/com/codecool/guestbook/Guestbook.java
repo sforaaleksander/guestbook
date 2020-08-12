@@ -23,23 +23,23 @@ public class Guestbook implements HttpHandler {
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         String method = httpExchange.getRequestMethod();
-        if(method.equals("POST")){
+        String requestURI = httpExchange.getRequestURI().toString();
+        System.out.println(requestURI);
+
+        if (method.equals("POST") && requestURI.contains("update")) {
+            saveUpdatedNote(httpExchange);
+        } else if (method.equals("POST")) {
             System.out.println("posting");
             postNote(httpExchange);
         }
-        String requestURI = httpExchange.getRequestURI().toString();
-        System.out.println(requestURI);
-        if (requestURI.contains("delete")){
+        if (requestURI.contains("delete")) {
             System.out.println("now deleting");
             deleteNote(httpExchange);
         }
-        if (requestURI.contains("update")){
+        if (requestURI.contains("update")) {
             System.out.println("now updating");
             updateNote(httpExchange);
             return;
-        }
-        if(method.equals("POST") && requestURI.contains("update")) {
-            saveUpdatedNote(httpExchange);
         }
         getNotes(httpExchange);
         System.out.println(notes.size());
@@ -60,10 +60,7 @@ public class Guestbook implements HttpHandler {
         int noteId = getNoteId(httpExchange);
         model.with("note", notes.get(noteId));
         response = template.render(model);
-        httpExchange.sendResponseHeaders(200, response.length());
-        OutputStream os = httpExchange.getResponseBody();
-        os.write(response.getBytes());
-        os.close();
+        send200(httpExchange, response);
     }
 
     private void deleteNote(HttpExchange httpExchange) throws IOException {
@@ -75,12 +72,12 @@ public class Guestbook implements HttpHandler {
     private void redirectHome(HttpExchange httpExchange) throws IOException {
         Headers responseHeaders = httpExchange.getResponseHeaders();
         responseHeaders.set("Location", "/guestbook");
-        httpExchange.sendResponseHeaders(302,0);
+        httpExchange.sendResponseHeaders(302, 0);
     }
 
     private int getNoteId(HttpExchange httpExchange) {
         String[] elements = httpExchange.getRequestURI().toString().split("/");
-        return Integer.parseInt(elements[elements.length-1]);
+        return Integer.parseInt(elements[elements.length - 1]);
     }
 
     private void getNotes(HttpExchange httpExchange) throws IOException {
@@ -89,6 +86,10 @@ public class Guestbook implements HttpHandler {
         JtwigModel model = JtwigModel.newModel();
         model.with("notes", notes);
         response = template.render(model);
+        send200(httpExchange, response);
+    }
+
+    private void send200(HttpExchange httpExchange, String response) throws IOException {
         httpExchange.sendResponseHeaders(200, response.length());
         OutputStream os = httpExchange.getResponseBody();
         os.write(response.getBytes());
@@ -105,7 +106,7 @@ public class Guestbook implements HttpHandler {
 
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-        String strDate= formatter.format(date);
+        String strDate = formatter.format(date);
         System.out.println(inputs.get("name"));
         System.out.println(inputs.get("message"));
         notes.add(new Note(notes.size(), inputs.get("name"), inputs.get("message"), strDate));
@@ -125,7 +126,7 @@ public class Guestbook implements HttpHandler {
     private static Map<String, String> parseFormData(String formData) throws UnsupportedEncodingException {
         Map<String, String> map = new HashMap<>();
         String[] pairs = formData.split("&");
-        for(String pair : pairs){
+        for (String pair : pairs) {
             String[] keyValue = pair.split("=");
             // We have to decode the value because it's urlencoded. see: https://en.wikipedia.org/wiki/POST_(HTTP)#Use_for_submitting_web_forms
             String key = URLDecoder.decode(keyValue[0], "UTF-8");
