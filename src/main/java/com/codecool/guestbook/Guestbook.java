@@ -24,30 +24,22 @@ public class Guestbook implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        for(Note note : notes) {
-            System.out.println(note);
-        }
         String method = httpExchange.getRequestMethod();
         String requestURI = httpExchange.getRequestURI().toString();
-        System.out.println(requestURI);
 
         if (method.equals("POST") && requestURI.contains("update")) {
             saveUpdatedNote(httpExchange);
         } else if (method.equals("POST")) {
-            System.out.println("posting");
             postNote(httpExchange);
         }
         if (requestURI.contains("delete")) {
-            System.out.println("now deleting");
             deleteNote(httpExchange);
         }
         if (requestURI.contains("update")) {
-            System.out.println("now updating");
             updateNote(httpExchange);
             return;
         }
         getNotes(httpExchange);
-        System.out.println(notes.size());
     }
 
     private void saveUpdatedNote(HttpExchange httpExchange) throws IOException {
@@ -117,8 +109,6 @@ public class Guestbook implements HttpHandler {
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
         String strDate = formatter.format(date);
-        System.out.println(inputs.get("name"));
-        System.out.println(inputs.get("message"));
         notes.add(new Note(idCount, inputs.get("name"), inputs.get("message"), strDate));
         idCount++;
     }
